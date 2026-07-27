@@ -1,4 +1,4 @@
-package com.example.scientificplot.ui.components
+package dev.Xpr3ss0.scientificplot.ui.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,12 +10,13 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.platform.testTag
 
 @Composable
 fun ScientificPlot(
-    wavelengths: DoubleArray?,
-    values: DoubleArray?,
+    xData: DoubleArray?,
+    yData: DoubleArray?,
     modifier: Modifier = Modifier
 ) {
     Box (modifier.testTag("ScientificPlotTest")){
@@ -23,16 +24,17 @@ fun ScientificPlot(
             modifier = modifier
                 .fillMaxWidth()
                 .height(250.dp)
+                .padding(10.dp)
         ) {
 
-            if (wavelengths == null || wavelengths.isEmpty()) return@Canvas
-            if (values == null || values.isEmpty()) return@Canvas
+            if (xData == null || xData.isEmpty()) return@Canvas
+            if (yData == null || yData.isEmpty()) return@Canvas
 
-            val xMin = wavelengths.first()
-            val xMax = wavelengths.last()
+            val xMin = xData.first()
+            val xMax = xData.last()
 
-            val yMin = values.min()
-            val yMax = values.max()
+            val yMin = yData.min()
+            val yMax = yData.max()
 
             fun mapX(x: Double): Float =
                 ((x - xMin) / (xMax - xMin) * size.width).toFloat()
@@ -43,14 +45,14 @@ fun ScientificPlot(
             val path = Path()
 
             path.moveTo(
-                mapX(wavelengths[0]),
-                mapY(values[0])
+                mapX(xData[0]),
+                mapY(yData[0])
             )
 
-            for (i in 1 until wavelengths.size) {
+            for (i in 1 until xData.size) {
                 path.lineTo(
-                    mapX(wavelengths[i]),
-                    mapY(values[i])
+                    mapX(xData[i]),
+                    mapY(yData[i])
                 )
             }
 
