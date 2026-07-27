@@ -1,26 +1,40 @@
 package dev.xpr3ss0.scientificplot.transforms
 
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
+import dev.xpr3ss0.scientificplot.model.BoundingBox
 import dev.xpr3ss0.scientificplot.model.PlotRange
 
 class LinearTransform(
     val plotRange: PlotRange,
-    val size: Size
+    val boundingBox: BoundingBox
 ) : CoordinateTransform {
+
+    /*
+    Linear map, mapping the 2d region specified by plotRange onto the 2d region specified by boundingBox
+     */
+
     override fun dataToScreen(point: Offset): Offset {
         val xRangeSpan = plotRange.xMax - plotRange.xMin
         val yRangeSpan = plotRange.yMax - plotRange.yMin
-        val x = (point.x - plotRange.xMin) / xRangeSpan * size.width
-        val y = (1.0F - (point.y - plotRange.yMin) / yRangeSpan) * size.height
-        return Offset(x, y)
+
+        // screen coordinates relative to top left of bounding box
+        val xRel = (point.x - plotRange.xMin) / xRangeSpan * boundingBox.size.width
+        val yRel = (1.0F - (point.y - plotRange.yMin) / yRangeSpan) * boundingBox.size.height
+
+        // point relative to top left of canvas
+        return Offset(xRel, yRel) + boundingBox.topLeft
     }
 
     override fun screenToData(point: Offset): Offset {
         val xRangeSpan = plotRange.xMax - plotRange.xMin
         val yRangeSpan = plotRange.yMax - plotRange.yMin
-        val x = point.x / size.width * xRangeSpan + plotRange.xMin
-        val y = plotRange.yMax - point.y / size.height * yRangeSpan
+
+        // point relative to the top left bounding box in data coordinates
+        val pointRel = point - boundingBox.topLeft
+
+        // corresponding data coordinates
+        val x = pointRel.x / boundingBox.size.width * xRangeSpan + plotRange.xMin
+        val y = plotRange.yMax - pointRel.y / boundingBox.size.height * yRangeSpan
         return Offset(x, y)
     }
 }
