@@ -1,5 +1,6 @@
 package dev.xpr3ss0.scientificplot.transforms
 
+import androidx.annotation.Size
 import androidx.compose.ui.geometry.Offset
 import dev.xpr3ss0.scientificplot.model.BoundingBox
 import dev.xpr3ss0.scientificplot.model.PlotRange
@@ -36,5 +37,11 @@ class LinearTransform(
         val x = pointRel.x / boundingBox.size.width * xRangeSpan + plotRange.xMin
         val y = plotRange.yMax - pointRel.y / boundingBox.size.height * yRangeSpan
         return Offset(x, y)
+    }
+}
+
+class LinearScale() : DataScale {
+    override fun getTransform(plotRange: PlotRange, boundingBox: BoundingBox): CoordinateTransform {
+        return LinearTransform(plotRange, boundingBox)
     }
 }

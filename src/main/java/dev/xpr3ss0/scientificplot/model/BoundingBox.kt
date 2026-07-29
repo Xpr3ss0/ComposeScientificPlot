@@ -4,6 +4,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 
 data class BoundingBox(
+    val top: Float,
+    val bottom: Float,
+    val left: Float,
+    val right: Float,
     val bottomLeft: Offset,
     val bottomRight: Offset,
     val topLeft: Offset,
@@ -13,6 +17,10 @@ data class BoundingBox(
     companion object {
         // Factory for TopLeft + BottomRight
         fun fromLTRB(topLeft: Offset, bottomRight: Offset): BoundingBox = BoundingBox(
+            top = topLeft.y,
+            bottom = bottomRight.y,
+            left = topLeft.x,
+            right = bottomRight.x,
             topLeft = topLeft,
             topRight = Offset(bottomRight.x, topLeft.y),
             bottomLeft = Offset(topLeft.x, bottomRight.y),
@@ -26,6 +34,10 @@ data class BoundingBox(
         // Factory for Center + Size
         fun fromCenterSize(center: Offset, size: Size): BoundingBox = BoundingBox(
             size = size,
+            top = center.y - size.height / 2,
+            bottom = center.y + size.height / 2,
+            left = center.x - size.width / 2,
+            right = center.x + size.width / 2,
             topLeft = center + Offset(-size.width / 2, -size.height / 2),
             topRight = center + Offset(size.width / 2, -size.height / 2),
             bottomLeft = center + Offset(-size.width / 2, size.height / 2),
