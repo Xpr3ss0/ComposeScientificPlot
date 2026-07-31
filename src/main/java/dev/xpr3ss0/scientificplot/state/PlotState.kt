@@ -5,6 +5,7 @@ import dev.xpr3ss0.scientificplot.model.CoordinateGrid
 import dev.xpr3ss0.scientificplot.model.CoordinateLabels
 import dev.xpr3ss0.scientificplot.model.DataSeries
 import dev.xpr3ss0.scientificplot.model.PlotRange
+import dev.xpr3ss0.scientificplot.model.SeriesPlot
 import dev.xpr3ss0.scientificplot.transforms.CoordinateTransform
 import dev.xpr3ss0.scientificplot.transforms.DataScale
 import dev.xpr3ss0.scientificplot.transforms.LinearScale
@@ -13,27 +14,28 @@ data class PlotState(
     /*
     The externally available state of the plot.
      */
-    val dataSeries: DataSeries,
+    val plotEntities: List<SeriesPlot>,
     val dataScale: DataScale,
     val plotRange: PlotRange,
     val boundingBoxRatio: Float
 ) {
     companion object {
         fun defaultFromEmpty() : PlotState {
-            val dataSeries = DataSeries(emptyList<Double>(), emptyList<Double>())
+            val plotEntities = emptyList<SeriesPlot>()
             val dataScale = LinearScale()
             val plotRange = PlotRange(-1F, 1F, -1F, 1F)
             val boundingBoxRatio = 0.8F
-            return PlotState(dataSeries, dataScale, plotRange, boundingBoxRatio)
+            return PlotState(plotEntities, dataScale, plotRange, boundingBoxRatio)
         }
-        fun defaultFromData(dataSeries: DataSeries): PlotState {
+        fun defaultFromData(dataSeries: DataSeries, name: String = "line plot"): PlotState {
             val plotRange = PlotRange(
                 dataSeries.xValues.min().toFloat(),
                 dataSeries.xValues.max().toFloat(),
                 dataSeries.yValues.min().toFloat(),
                 dataSeries.yValues.max().toFloat()
             )
-            return defaultFromEmpty().copy(dataSeries = dataSeries, plotRange = plotRange)
+            val seriesPlot = SeriesPlot.linePlot(dataSeries, name)
+            return defaultFromEmpty().copy(plotEntities = listOf<SeriesPlot>(seriesPlot), plotRange = plotRange)
         }
     }
 }
@@ -49,5 +51,5 @@ data class InternalPlotState(
     val transform: CoordinateTransform,
     val plotRange: PlotRange,
     val coordinateLabels: CoordinateLabels,
-    val dataSeries: DataSeries
+    val plotEntities: List<SeriesPlot>
 )

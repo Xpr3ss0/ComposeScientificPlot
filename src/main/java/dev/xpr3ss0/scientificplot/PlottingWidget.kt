@@ -66,7 +66,7 @@ fun ScientificPlot(
                 boundingBox = boundingBox,
                 coordinateGrid = grid,
                 coordinateLabels = labels,
-                dataSeries = plotState.dataSeries
+                plotEntities = plotState.plotEntities
             )
 
 
@@ -76,8 +76,8 @@ fun ScientificPlot(
 
             drawLabels(this, internalState, textMeasurer)
 
-            if (plotState.dataSeries.isFull() && plotState.dataSeries.isSymmetric()) {
-                drawSeries(this, internalState)
+            if (plotState.plotEntities.isNotEmpty()) {
+                drawPlots(this, internalState)
             }
         }
 
@@ -85,48 +85,63 @@ fun ScientificPlot(
     }
 }
 
-fun drawSeries(drawScope: DrawScope, state: InternalPlotState) {
-
+fun drawPlots(drawScope: DrawScope, state: InternalPlotState) {
 
     val coordinateTransform = state.transform
     val boundingBox = state.boundingBox
 
     val path = Path()
 
-    // iterate over array, using first in-range value as line start
-    var startIndex = 0
-    var startPoint: Offset
-    do {
-        startPoint = coordinateTransform.dataToScreen(Offset(
-            state.dataSeries.xValues[startIndex].toFloat(),
-            state.dataSeries.yValues[startIndex].toFloat()
-        ))
-        startIndex++
-        if (startIndex >= state.dataSeries.xValues.size) {
-            // reached end of array
-            return
+    var pathVisible = true
+
+    for (plot in state.plotEntities) {
+
+        // iterate over array, using first in-range value as line start
+        var startIndex = 0
+        var startPoint: Offset
+        do {
+            startPoint = coordinateTransform.dataToScreen(
+                Offset(
+                    plot.dataSeries.xValues[startIndex].toFloat(),
+                    plot.dataSeries.yValues[startIndex].toFloat()
+                )
+            )
+            startIndex++
+            if (startIndex >= plot.dataSeries.xValues.size) {
+                // reached end of array
+                return
+            }
+        } while (!boundingBox.contains(startPoint))
+
+        path.moveTo(startPoint.x, startPoint.y)
+
+        for (i in startIndex until plot.dataSeries.xValues.size) {
+
+            val nextPoint = coordinateTransform.dataToScreen(
+                Offset(
+                    plot.dataSeries.xValues[i].toFloat(),
+                    plot.dataSeries.yValues[i].toFloat()
+                )
+            )
+
+            if (boundingBox.contains(nextPoint)) {
+                if (pathVisible) {
+                    path.lineTo(nextPoint.x, nextPoint.y)
+                } else {
+                    path.moveTo(nextPoint.x, nextPoint.y)
+                    pathVisible = true
+                }
+            } else {
+                pathVisible = false
+            }
         }
-    } while (!boundingBox.contains(startPoint))
 
-    path.moveTo(startPoint.x, startPoint.y)
-
-    for (i in startIndex until state.dataSeries.xValues.size) {
-
-        val nextPoint = coordinateTransform.dataToScreen(Offset(
-            state.dataSeries.xValues[i].toFloat(),
-            state.dataSeries.yValues[i].toFloat()
-        ))
-
-        if (boundingBox.contains(nextPoint)) {
-            path.lineTo(nextPoint.x, nextPoint.y)
-        }
+        drawScope.drawPath(
+            path,
+            color = plot.plotStyle.color,
+            style = plot.plotStyle.lineStyle
+        )
     }
-
-    drawScope.drawPath(
-        path,
-        color = Color.Blue,
-        style = Stroke(width = 4f)
-    )
 }
 
 fun drawFrame(drawScope: DrawScope, state: InternalPlotState) {
