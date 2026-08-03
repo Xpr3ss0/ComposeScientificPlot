@@ -11,7 +11,6 @@ class PlotManager(initialState: PlotState) {
         private set
 
     fun addPlot(plot : SeriesPlot) {
-        plotState = plotState.copy(plotEntities = plotState.plotEntities + plot)
         val updatedEntities = plotState.plotEntities + plot
         updatePlots(updatedEntities)
     }
@@ -21,10 +20,15 @@ class PlotManager(initialState: PlotState) {
         updatePlots(updatedEntities)
     }
 
+    fun clearPlot() {
+        plotState = plotState.copy(plotEntities = emptyList()) // leave range as is
+    }
+
     // helper functions
     fun updatePlots(updatedEntities: List<SeriesPlot>, relativeRangePadding: Float = 0.1F) {
 
         if (updatedEntities.isEmpty() || updatedEntities.all { !it.dataSeries.isFull() }) {
+            println("Clearing plot.")
             val globalMinX = -1F
             val globalMinY = -1F
             val globalMaxX = 1F
@@ -37,7 +41,7 @@ class PlotManager(initialState: PlotState) {
                     yMin = globalMinY,
                     yMax = globalMaxY
                 ),
-                plotEntities = updatedEntities
+                plotEntities = emptyList()
             )
             return
         }
@@ -63,6 +67,7 @@ class PlotManager(initialState: PlotState) {
             ),
             plotEntities = updatedEntities
         )
+        println("Plot state updated with plots: $updatedEntities")
     }
 
     fun setRange(xMin: Float? = null, xMax: Float? = null, yMin: Float? = null, yMax: Float? = null) {
